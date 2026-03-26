@@ -1,4 +1,4 @@
-import { put, del, head, download } from "@vercel/blob";
+import { put, del, head } from "@vercel/blob";
 import { Review, ReviewSession, ReviewStats } from "@/types/review";
 import { v4 as uuidv4 } from "uuid";
 
@@ -64,9 +64,10 @@ export async function createSession(
 
 export async function getSession(id: string): Promise<ReviewSession | null> {
   try {
-    const { body } = await download(`sessions/${id}.json`);
-    const text = await new Response(body).text();
-    return JSON.parse(text);
+    const blob = await head(`sessions/${id}.json`);
+    const res = await fetch(blob.downloadUrl, { cache: "no-store" });
+    if (!res.ok) return null;
+    return await res.json();
   } catch {
     return null;
   }
