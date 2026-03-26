@@ -1,4 +1,4 @@
-import { put, del, head } from "@vercel/blob";
+import { put, del, list } from "@vercel/blob";
 import { Review, ReviewSession, ReviewStats } from "@/types/review";
 import { v4 as uuidv4 } from "uuid";
 
@@ -64,8 +64,9 @@ export async function createSession(
 
 export async function getSession(id: string): Promise<ReviewSession | null> {
   try {
-    const blob = await head(`sessions/${id}.json`);
-    const res = await fetch(blob.downloadUrl, { cache: "no-store" });
+    const { blobs } = await list({ prefix: `sessions/${id}.json` });
+    if (!blobs.length) return null;
+    const res = await fetch(blobs[0].downloadUrl, { cache: "no-store" });
     if (!res.ok) return null;
     return await res.json();
   } catch {
@@ -75,7 +76,8 @@ export async function getSession(id: string): Promise<ReviewSession | null> {
 
 export async function deleteSession(id: string): Promise<void> {
   try {
-    await del(`sessions/${id}.json`);
+    const { blobs } = await list({ prefix: `sessions/${id}.json` });
+    if (blobs.length) await del(blobs[0].url);
   } catch {
     // ignore
   }
