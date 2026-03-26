@@ -1,16 +1,6 @@
+import { put, del, head } from "@vercel/blob";
 import { Review, ReviewSession, ReviewStats } from "@/types/review";
 import { v4 as uuidv4 } from "uuid";
-
-// Use globalThis to persist across hot reloads and module instances in dev
-const globalForStore = globalThis as unknown as {
-  __reviewSessions?: Map<string, ReviewSession>;
-};
-
-if (!globalForStore.__reviewSessions) {
-  globalForStore.__reviewSessions = new Map<string, ReviewSession>();
-}
-
-const sessions = globalForStore.__reviewSessions;
 
 export function computeStats(reviews: Review[]): ReviewStats {
   const ratings = reviews.map((r) => r.rating);
@@ -48,11 +38,11 @@ export function computeStats(reviews: Review[]): ReviewStats {
   };
 }
 
-export function createSession(
+export async function createSession(
   reviews: Review[],
   sourceUrl?: string,
   sourceName?: string
-): ReviewSession {
+): Promise<ReviewSession> {
   const id = uuidv4();
   const session: ReviewSession = {
     id,
@@ -62,14 +52,32 @@ export function createSession(
     createdAt: new Date().toISOString(),
     stats: computeStats(reviews),
   };
-  sessions.set(id, session);
+
+  await put(`sessions/${id}.json`, JSON.stringify(session), {
+    access: "public",
+    contentType: "application/json",
+    addRandomSuffix: false,
+  });
+
   return session;
 }
 
-export function getSession(id: string): ReviewSession | undefined {
-  return sessions.get(id);
+export async function getSession(id: string): Promise<ReviewSession | null> {
+  try {
+    const blob = await head(`sessions/${id}.json`);
+    const res = await fetch(blob.url, { cache: "no-store" });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
 }
 
-export function deleteSession(id: string): void {
-  sessions.delete(id);
+export async function deleteSession(id: string): Promise<void> {
+  try {
+    const blob = await head(`sessions/${id}.json`);
+    await del(blob.url);
+  } catch {
+    // ignore
+  }
 }

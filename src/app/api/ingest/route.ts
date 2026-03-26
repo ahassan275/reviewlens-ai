@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const session = createSession(reviews, sourceUrl, sourceName);
+    const session = await createSession(reviews, sourceUrl, sourceName);
 
     return NextResponse.json({
       sessionId: session.id,

@@ -16,7 +16,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const session = getSession(sessionId);
+    const session = await getSession(sessionId);
     if (!session) {
       return new Response(
         JSON.stringify({ error: "Session not found. Please ingest reviews first." }),
