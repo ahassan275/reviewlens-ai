@@ -54,7 +54,7 @@ export async function createSession(
   };
 
   await put(`sessions/${id}.json`, JSON.stringify(session), {
-    access: "public",
+    access: "private",
     contentType: "application/json",
     addRandomSuffix: false,
   });
@@ -65,7 +65,8 @@ export async function createSession(
 export async function getSession(id: string): Promise<ReviewSession | null> {
   try {
     const blob = await head(`sessions/${id}.json`);
-    const res = await fetch(blob.url, { cache: "no-store" });
+    const fetchUrl = blob.downloadUrl || blob.url;
+    const res = await fetch(fetchUrl, { cache: "no-store" });
     if (!res.ok) return null;
     return await res.json();
   } catch {
