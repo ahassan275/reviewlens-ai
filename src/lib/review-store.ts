@@ -1,4 +1,4 @@
-import { put, del, list } from "@vercel/blob";
+import { put, del, get } from "@vercel/blob";
 import { Review, ReviewSession, ReviewStats } from "@/types/review";
 import { v4 as uuidv4 } from "uuid";
 
@@ -64,20 +64,25 @@ export async function createSession(
 
 export async function getSession(id: string): Promise<ReviewSession | null> {
   try {
-    const { blobs } = await list({ prefix: `sessions/${id}.json` });
-    if (!blobs.length) return null;
-    const res = await fetch(blobs[0].downloadUrl, { cache: "no-store" });
-    if (!res.ok) return null;
-    return await res.json();
-  } catch {
+    const pathname = `sessions/${id}.json`;
+    const blob = await get(pathname, {
+      access: "private",
+      useCache: false,
+    });
+
+    if (!blob) return null;
+
+    const text = await new Response(blob.stream).text();
+    return JSON.parse(text) as ReviewSession;
+  } catch (error) {
+    console.error("Failed to load review session", { id, error });
     return null;
   }
 }
 
 export async function deleteSession(id: string): Promise<void> {
   try {
-    const { blobs } = await list({ prefix: `sessions/${id}.json` });
-    if (blobs.length) await del(blobs[0].url);
+    await del(`sessions/${id}.json`);
   } catch {
     // ignore
   }
