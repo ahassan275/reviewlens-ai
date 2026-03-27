@@ -10,7 +10,6 @@ import {
   BarChart3,
   Shield,
   Loader2,
-  Info,
   MessageSquare,
   RotateCcw,
 } from "lucide-react";
@@ -52,7 +51,7 @@ export default function ChatPageWrapper() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+          <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
         </div>
       }
     >
@@ -185,7 +184,7 @@ function ChatPage() {
   if (!sessionId) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <p className="text-slate-600">No session found.</p>
+        <p className="text-muted-foreground">No session found.</p>
         <Link href="/">
           <Button variant="outline">
             <ArrowLeft className="mr-2 h-4 w-4" /> Import Reviews First
@@ -209,28 +208,28 @@ function ChatPage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="flex flex-col h-screen bg-background bg-dots bg-grain">
       {/* Header */}
-      <header className="border-b bg-white/80 backdrop-blur-sm shrink-0">
+      <header className="border-b border-border/60 bg-background/80 backdrop-blur-md shrink-0">
         <div className="mx-auto max-w-4xl px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-indigo-600 flex items-center justify-center">
+            <Link href="/" className="flex items-center gap-2.5">
+              <div className="h-8 w-8 rounded-xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-600/20">
                 <Sparkles className="h-4 w-4 text-white" />
               </div>
-              <span className="text-lg font-bold text-slate-900">
-                ReviewLens AI
+              <span className="text-lg font-extrabold tracking-tight text-foreground">
+                ReviewLens<span className="text-emerald-600">.</span>
               </span>
             </Link>
             {sessionInfo && (
-              <Badge variant="secondary">
+              <Badge variant="secondary" className="font-semibold">
                 {sessionInfo.sourceName} · {sessionInfo.totalReviews} reviews
               </Badge>
             )}
           </div>
           <div className="flex items-center gap-2">
             <Link href={`/dashboard?sessionId=${sessionId}`}>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" className="font-semibold">
                 <BarChart3 className="mr-2 h-4 w-4" /> Dashboard
               </Button>
             </Link>
@@ -239,6 +238,7 @@ function ChatPage() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setMessages([])}
+                className="text-muted-foreground"
               >
                 <RotateCcw className="mr-1 h-3 w-3" /> Clear
               </Button>
@@ -248,9 +248,11 @@ function ChatPage() {
       </header>
 
       {/* Scope Guard Banner */}
-      <div className="bg-indigo-50 border-b border-indigo-100 shrink-0">
-        <div className="mx-auto max-w-4xl px-6 py-2 flex items-center gap-2 text-sm text-indigo-700">
-          <Shield className="h-4 w-4 shrink-0" />
+      <div className="bg-emerald-50 border-b border-emerald-100 shrink-0">
+        <div className="mx-auto max-w-4xl px-6 py-2.5 flex items-center gap-2.5 text-sm font-medium text-emerald-800">
+          <div className="scope-guard-pulse rounded-full">
+            <Shield className="h-4 w-4 shrink-0 text-emerald-600" />
+          </div>
           <span>
             Scope Guard active — AI will only answer questions about your
             loaded reviews
@@ -261,24 +263,27 @@ function ChatPage() {
       {/* Messages */}
       <div className="flex-1 overflow-hidden">
         <ScrollArea className="h-full" ref={scrollRef}>
-          <div className="mx-auto max-w-4xl px-6 py-6 space-y-6">
+          <div className="mx-auto max-w-4xl px-6 py-8 space-y-6">
             {messages.length === 0 && (
-              <div className="text-center py-12">
-                <MessageSquare className="mx-auto h-12 w-12 text-slate-300 mb-4" />
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">
+              <div className="text-center py-16 animate-fade-up">
+                <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-emerald-50 border border-emerald-100 mb-5">
+                  <MessageSquare className="h-7 w-7 text-emerald-600" />
+                </div>
+                <h3 className="text-xl font-bold text-foreground mb-2">
                   Ask about your reviews
                 </h3>
-                <p className="text-slate-500 mb-6 max-w-md mx-auto">
+                <p className="text-muted-foreground mb-8 max-w-md mx-auto leading-relaxed">
                   I can analyze sentiment, identify trends, find common
                   complaints, and answer any question about the{" "}
-                  {sessionInfo?.totalReviews || ""} reviews you loaded.
+                  <span className="font-semibold text-foreground">{sessionInfo?.totalReviews || ""} reviews</span> you loaded.
                 </p>
-                <div className="flex flex-wrap justify-center gap-2 max-w-lg mx-auto">
-                  {SUGGESTED_QUESTIONS.map((q) => (
+                <div className="flex flex-wrap justify-center gap-2.5 max-w-lg mx-auto">
+                  {SUGGESTED_QUESTIONS.map((q, i) => (
                     <button
                       key={q}
                       onClick={() => sendMessage(q)}
-                      className="px-3 py-1.5 text-sm rounded-full border border-slate-200 text-slate-600 hover:bg-white hover:border-indigo-200 hover:text-indigo-600 transition-colors"
+                      className="animate-question-in btn-press px-4 py-2 text-sm font-medium rounded-xl border border-border/60 text-foreground/70 bg-card hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 shadow-sm hover:shadow-md"
+                      style={{ animationDelay: `${i * 70 + 200}ms` }}
                     >
                       {q}
                     </button>
@@ -290,23 +295,23 @@ function ChatPage() {
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex ${
+                className={`flex animate-message-in ${
                   message.role === "user" ? "justify-end" : "justify-start"
                 }`}
               >
                 <div
                   className={`max-w-[85%] ${
                     message.role === "user"
-                      ? "bg-indigo-600 text-white rounded-2xl rounded-br-md px-4 py-3"
-                      : "bg-white border rounded-2xl rounded-bl-md px-5 py-4 shadow-sm"
+                      ? "bg-emerald-600 text-white rounded-2xl rounded-br-sm px-5 py-3 shadow-md shadow-emerald-600/15"
+                      : "bg-card border border-border/60 rounded-2xl rounded-bl-sm px-5 py-4 shadow-sm"
                   }`}
                 >
                   {message.role === "assistant" &&
                     isScopeGuardResponse(message.content) && (
-                      <div className="flex items-center gap-1.5 mb-2">
+                      <div className="flex items-center gap-1.5 mb-3">
                         <Badge
                           variant="secondary"
-                          className="bg-amber-50 text-amber-700 border-amber-200 text-xs"
+                          className="bg-amber-50 text-amber-700 border-amber-200 text-xs font-semibold"
                         >
                           <Shield className="h-3 w-3 mr-1" />
                           Scope Guard
@@ -317,7 +322,7 @@ function ChatPage() {
                     className={`text-sm leading-relaxed ${
                       message.role === "user"
                         ? "text-white"
-                        : "text-slate-700 prose prose-sm prose-slate max-w-none"
+                        : "text-foreground/80 prose prose-sm prose-slate max-w-none prose-headings:text-foreground prose-strong:text-foreground"
                     }`}
                   >
                     {message.role === "assistant" ? (
@@ -333,9 +338,16 @@ function ChatPage() {
             {isLoading &&
               messages.length > 0 &&
               messages[messages.length - 1].role === "user" && (
-                <div className="flex justify-start">
-                  <div className="bg-white border rounded-2xl rounded-bl-md px-5 py-4 shadow-sm">
-                    <Loader2 className="h-5 w-5 animate-spin text-indigo-600" />
+                <div className="flex justify-start animate-message-in">
+                  <div className="bg-card border border-border/60 rounded-2xl rounded-bl-sm px-5 py-5 shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1.5">
+                        <span className="typing-dot" />
+                        <span className="typing-dot" />
+                        <span className="typing-dot" />
+                      </div>
+                      <span className="text-xs text-muted-foreground font-medium">Scanning your reviews...</span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -344,16 +356,16 @@ function ChatPage() {
       </div>
 
       {/* Input */}
-      <div className="border-t bg-white/80 backdrop-blur-sm shrink-0">
+      <div className="border-t border-border/60 bg-background/80 backdrop-blur-md shrink-0">
         <div className="mx-auto max-w-4xl px-6 py-4">
-          <form onSubmit={handleSubmit} className="flex gap-2">
+          <form onSubmit={handleSubmit} className="flex gap-3">
             <div className="flex-1 relative">
               <Textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Ask a question about the reviews..."
-                className="resize-none min-h-[44px] max-h-32 pr-12"
+                className="resize-none min-h-[48px] max-h-32 pr-4 text-base rounded-xl border-border/60"
                 rows={1}
                 disabled={isLoading}
               />
@@ -361,7 +373,7 @@ function ChatPage() {
             <Button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="shrink-0"
+              className="shrink-0 h-12 w-12 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-600/20 btn-press"
             >
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -370,10 +382,9 @@ function ChatPage() {
               )}
             </Button>
           </form>
-          <div className="flex items-center gap-1 mt-2 text-xs text-slate-400">
-            <Info className="h-3 w-3" />
-            <span>Press Enter to send, Shift+Enter for new line</span>
-          </div>
+          <p className="mt-2 text-[11px] text-muted-foreground font-medium">
+            Enter to send · Shift+Enter for new line
+          </p>
         </div>
       </div>
     </div>
